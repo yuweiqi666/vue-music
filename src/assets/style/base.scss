@@ -7,4 +7,20 @@ body {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   background: $background-color;
+  color: $color-text;
+}
+
+
+// 清除vue-router的默认样式
+a {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: unset;
+}
+
+// router-link 点击路由显示的颜色
+.router-link-active {
+  color: $color-theme;
 }

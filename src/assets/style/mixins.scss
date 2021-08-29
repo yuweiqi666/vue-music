@@ -1,9 +1,12 @@
 // 根据不同的设备像素比显示不同倍率的图片
 @mixin bg-image($url) {
   background: url($url + '@2x.png') no-repeat;
+  background-size: 100% 100%;
   @media(-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3) {
     background: url($url + '@3x.png') no-repeat;
+    background-size: 100% 100%;
   }
+  
 }
 
 // 设置文字不换行

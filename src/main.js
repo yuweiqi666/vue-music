@@ -6,6 +6,9 @@ import store from './store'
 // css样式引入
 import './assets/style/index.scss'
 
+// iconfont 字体图标
+import './assets/iconfonts/index.js'
+
 // 根据宽度自动设置rem基准值
 import 'amfe-flexible'
 

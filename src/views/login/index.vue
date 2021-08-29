@@ -1,7 +1,6 @@
 <template>
   <div class="login">
     <h1>i am login</h1>
-    <div class="border"></div>
   </div>
 </template>
 
