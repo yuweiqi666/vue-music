@@ -24,3 +24,8 @@ a {
 .router-link-active {
   color: $color-theme;
 }
+
+// img 的对齐方式
+img {
+  vertical-align: middle;
+}

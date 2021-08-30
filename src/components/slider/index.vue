@@ -3,7 +3,14 @@
     <div class="slider-group" ref="sliderGroup">
       <slot />
     </div>
-    <div class="slider-dots"></div>
+    <div class="slider-dots">
+      <span
+        :key="index"
+        v-for="(item, index) in sliderNum"
+        class="dot-item"
+        :class="{ 'slider-active': index == currentPageIndex }">
+      </span>
+    </div>
   </div>
 </template>
 
@@ -11,40 +18,56 @@
 import BScroll from '@better-scroll/core'
 export default {
   name: 'Silder',
+  data () {
+    return {
+      sliderNum: 0,
+      currentPageIndex: 0
+    }
+  },
+  props: {
+    loop: {
+      type: Boolean,
+      default: true
+    },
+    autoplay: {
+      type: Boolean,
+      default: true
+    }
+  },
   mounted () {
-    this.$nextTick(() => {
-    // 设置轮播图容器的宽度
-      // const silderGroupDom = this.$refs.sliderGroup
-      // console.log('silderGroupDom', silderGroupDom)
-      // const childrenDom = silderGroupDom.children
-      // console.log('childrenDom', childrenDom)
-      // const sliderWidth = this.$refs.slider.clientWidth
-      // childrenDom.forEach(child => {
-      //   child.style.width = sliderWidth + 'px'
-      // })
-
-      // this.$refs.sliderGroup.style.width = 12 * 100 + '%'
-
-    })
-    setTimeout(() => {
-      this.setSliderGroupWidth()
-
-      const bs = new BScroll('.slider', {
-        scrollX: true
-      })
-      console.log(bs)
-    }, 20)
+    this.setSliderWidth()
+    this.initSlider()
   },
   methods: {
-    setSliderGroupWidth () {
-      const sliderGroup = this.$refs.sliderGroup
-      const children = sliderGroup.children
+    setSliderWidth () {
       const sliderWidth = this.$refs.slider.clientWidth
+      const sliderGroupDom = this.$refs.sliderGroup
+      const children = sliderGroupDom.children
+      this.sliderNum = children.length
+      sliderGroupDom.style.width = children.length * sliderWidth + 'px'
       children.forEach(child => {
-        child.classList.add('slider-item')
         child.style.width = sliderWidth + 'px'
+        child.style.overflow = 'hidden'
+        child.classList.add('slider-item')
       })
-      sliderGroup.style.width = children.length * sliderWidth + 'px'
+    },
+    initSlider () {
+      const slider = new BScroll('.slider', {
+        scrollX: true,
+        scrollY: false,
+        slide: {
+          loop: this.loop,
+          autoplay: this.autoplay,
+          threshold: 100
+        },
+        momentum: false,
+        bounce: false,
+        stopPropagation: true,
+        click: true
+      })
+      slider.on('slidePageChanged', (page) => {
+        this.currentPageIndex = page.pageX
+      })
     }
   }
 
@@ -52,19 +75,37 @@ export default {
 </script>
 
 <style scoped lang='scss'>
+@import '../../assets/style/variable.scss';
 .slider {
+  position: relative;
   .slider-group {
+    display: flex;
     .slider-item {
-      display: flex;
       a {
-      display: block;
-      width: 100%;
         img {
-          vertical-align: middle;
+          width: 100%;
         }
       }
     }
-
+  }
+  .slider-dots {
+    position: absolute;
+    width: 100%;
+    bottom: 8px;
+    display: flex;
+    justify-content: center;
+    .dot-item {
+      display: block;
+      margin-right: 5px;
+      width: 6px;
+      height: 6px;
+      border-radius: 6px;
+      background-color: $color-text-ll;
+    }
+    .slider-active {
+      width: 16px ;
+    }
   }
 }
+
 </style>

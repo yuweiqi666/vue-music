@@ -6,3 +6,8 @@ export const getBannerApi = (params) => {
     params
   })
 }
+
+// 获取热门歌单
+export const getHotListApi = () => {
+  return request('/personalized')
+}

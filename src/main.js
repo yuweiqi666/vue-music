@@ -13,6 +13,9 @@ import './assets/iconfonts/index.js'
 // 根据宽度自动设置rem基准值
 import 'amfe-flexible'
 
+// better-scroll 轮播图插件
+import './plugins/betterscroll'
+
 // 获取设备系统
 const deviceMsg = window.navigator.userAgent
 console.log('device', deviceMsg)

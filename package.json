@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@better-scroll/core": "^2.4.2",
+    "@better-scroll/slide": "^2.4.2",
     "amfe-flexible": "^2.2.1",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",

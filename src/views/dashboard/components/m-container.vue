@@ -46,7 +46,7 @@ export default {
         text-align: center;
         line-height: 44px;
         font-size: $font-suze-medium;
-        color: $colot-text-ll;
+        color: $color-text-l;
         .router-link-active {
           span {
             padding-bottom: 5px;
