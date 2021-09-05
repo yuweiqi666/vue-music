@@ -75,7 +75,7 @@ export default {
 </script>
 
 <style scoped lang='scss'>
-@import '../../assets/style/variable.scss';
+@import '../../../assets/style/variable.scss';
 .slider {
   position: relative;
   overflow: hidden;

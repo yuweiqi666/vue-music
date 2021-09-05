@@ -23,7 +23,6 @@
           </div>
           <div class="recommend-list-wrapper">
             <div v-for="item in recommendList" :key="item.id" class="recommend-list-wrapper-item">
-              <!-- {{ item.name }} -->
               <div class="recommend-list-wrapper-item-side-img">
                 <img v-lazy="item.picUrl" alt="">
               </div>
@@ -39,27 +38,31 @@
           </div>
         </div>
       </div>
+      <!-- loading加载组件 -->
+      <loading v-show="!recommendList" />
     </scroll>
   </div>
 </template>
 
 <script>
-import Slider from '@/components/slider'
-import Scroll from '@/components/scroll'
+import Slider from '@/components/common/slider'
+import Scroll from '@/components/common/scroll'
+import Loading from '@/components/common/loading'
 import { getBannerApi, getHotListApi } from '@/http/recommend'
 import { handleBannerImg } from './format/index'
 export default {
   name: 'Recommend',
   components: {
     Slider,
-    Scroll
+    Scroll,
+    Loading
   },
   data () {
     return {
       // 轮播图片
       bannerImg: [],
       // 推荐歌单列表数据
-      recommendList: [],
+      recommendList: null,
       // img轮播图的第一张图片是否加载
       isLoadImg: false
     }
@@ -167,6 +170,13 @@ export default {
           }
         }
       }
+    }
+    // loading组件居中
+    .loading {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
     }
   }
 

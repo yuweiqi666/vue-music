@@ -1,6 +1,6 @@
 
 import Vue from 'vue'
-import svgIcon from '../../components/svgicon'
+import svgIcon from '../../components/common/svgicon'
 
 Vue.component('svg-icon', svgIcon) // 挂载全局组件
 
