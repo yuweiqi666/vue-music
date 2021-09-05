@@ -16,6 +16,9 @@ import 'amfe-flexible'
 // better-scroll 轮播图插件
 import './plugins/betterscroll'
 
+// vue-lazyload 图片懒加载
+import './plugins/lazyload'
+
 // 获取设备系统
 const deviceMsg = window.navigator.userAgent
 console.log('device', deviceMsg)

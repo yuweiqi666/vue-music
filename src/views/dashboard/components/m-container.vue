@@ -23,7 +23,9 @@
       </div>
     </div>
     <div class="m-wrapper">
-      <router-view />
+      <!-- <keep-alive> -->
+        <router-view />
+      <!-- </keep-alive> -->
     </div>
   </div>
 </template>
@@ -54,6 +56,9 @@ export default {
           }
         }
       }
+    }
+    .m-wrapper {
+      overflow: hidden;
     }
   }
 </style>

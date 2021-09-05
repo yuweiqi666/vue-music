@@ -78,6 +78,7 @@ export default {
 @import '../../assets/style/variable.scss';
 .slider {
   position: relative;
+  overflow: hidden;
   .slider-group {
     display: flex;
     .slider-item {
