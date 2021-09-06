@@ -94,7 +94,6 @@ export default {
     },
     // 轮播图图片加载后触发
     imgLoad () {
-      console.log('加载图片')
       if (!this.isLoadImg) {
         this.$refs.scroll.refresh()
         this.isLoadImg = true

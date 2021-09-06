@@ -41,7 +41,6 @@ export default {
   watch: {
     data: {
       handler (n, o) {
-        console.log('n', n)
         this.$nextTick(() => {
           this.refresh()
         })
