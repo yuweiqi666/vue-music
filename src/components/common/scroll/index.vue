@@ -1,5 +1,5 @@
 <template>
-  <div class="scroll">
+  <div class="scroll" ref="scrollWrapper">
     <slot />
   </div>
 </template>
@@ -11,7 +11,7 @@ export default {
   props: {
     probeType: {
       type: Number,
-      default: 1
+      default: 3
     },
     click: {
       type: Boolean,
@@ -32,10 +32,29 @@ export default {
   },
   methods: {
     initScroll () {
-      this.bs = new BScroll('.scroll')
+      this.bs = new BScroll(this.$refs.scrollWrapper, {
+        click: this.click,
+        probeType: this.probeType
+      })
+      this.bs.on('scroll', this.scrollEvent)
+      const hooks = this.bs.scroller.hooks
+      hooks.on('resize', this.reSizeEvent)
     },
     refresh () {
       this.bs && this.bs.refresh()
+    },
+    scrollEvent (position) {
+      this.$emit('pageScroll', position)
+    },
+    // 监听window窗口变化
+    reSizeEvent () {
+      this.$emit('pageResize')
+    },
+    pageScrollTo (...rest) {
+      this.bs && this.bs.scrollTo.apply(this.bs, rest)
+    },
+    pageScrollToElement (...rest) {
+      this.bs && this.bs.scrollToElement.apply(this.bs, rest)
     }
   },
   watch: {
@@ -50,4 +69,9 @@ export default {
 }
 </script>
 
-<style scoped lang='scss'></style>
+<style scoped lang="scss">
+.scroll {
+  overflow: hidden;
+  height: 100%;
+}
+</style>

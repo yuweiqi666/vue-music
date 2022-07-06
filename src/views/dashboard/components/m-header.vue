@@ -15,8 +15,8 @@ export default {
 </script>
 
 <style scoped lang='scss'>
-@import '../../../assets/style/variable.scss';
-@import '../../../assets/style/mixins.scss';
+@import '@assets/style/variable.scss';
+@import '@assets/style/mixins.scss';
 .m-header {
   height: 44px;
   display: flex;

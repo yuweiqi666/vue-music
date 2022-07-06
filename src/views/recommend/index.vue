@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend">
+  <div class="recommend" ref="recommend">
     <scroll :data='recommendList' ref="scroll">
       <div>
         <!-- 轮播图 -->
@@ -45,13 +45,15 @@
 </template>
 
 <script>
-import Slider from '@/components/common/slider'
-import Scroll from '@/components/common/scroll'
-import Loading from '@/components/common/loading'
+import Slider from '@components/common/slider'
+import Scroll from '@components/common/scroll'
+import Loading from '@components/common/loading'
 import { getBannerApi, getHotListApi } from '@/http/recommend'
 import { handleBannerImg } from './format/index'
+import { playlistUpdate } from '@/mixins/playlistUpdate'
 export default {
   name: 'Recommend',
+  mixins: [playlistUpdate],
   components: {
     Slider,
     Scroll,
@@ -98,27 +100,29 @@ export default {
         this.$refs.scroll.refresh()
         this.isLoadImg = true
       }
+    },
+    handlePlayListRefresh (playList) {
+      this.$refs.recommend.style.bottom = playList && playList.length ? '60px' : 0
+      this.$refs.scroll.refresh()
     }
   }
 }
 </script>
 
 <style scoped lang='scss'>
-@import '../../assets/style/variable.scss';
+@import '@assets/style/variable.scss';
 .recommend {
-  position: fixed;
-  width: 100%;
-  top: 88px;
+  position: absolute;
+  top: 0;
   bottom: 0;
+  width: 100%;
   .scroll {
-    height: 100%;
-    overflow: hidden;
     .slider {
       .recommend-item {
         border-radius: 8px;
         overflow: auto;
+        position: relative;
         a {
-          position: relative;
           .recommend-title {
             position: absolute;
             bottom: 0;

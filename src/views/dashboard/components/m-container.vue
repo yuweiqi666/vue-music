@@ -1,6 +1,6 @@
 <template>
   <div class="m-container">
-    <div class="m-tab">
+    <div class="m-tab" ref="tab">
       <div class="m-tab-item">
         <router-link to="/dashboard/recommend">
           <span>推荐</span>
@@ -22,22 +22,26 @@
         </router-link>
       </div>
     </div>
-    <div class="m-wrapper">
-      <!-- <keep-alive> -->
-        <router-view />
-      <!-- </keep-alive> -->
+    <div class="m-wrapper" ref="mWrapper">
+      <router-view />
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
-  name: 'MContainer'
+  name: 'MContainer',
+  computed: {
+    ...mapGetters('player', [
+      'currentSong'
+    ])
+  }
 }
 </script>
 
 <style scoped lang='scss'>
-  @import '../../../assets/style/variable.scss';
+  @import '@assets/style/variable.scss';
   .m-container {
     .m-tab {
       height: 44px;
@@ -58,7 +62,10 @@ export default {
       }
     }
     .m-wrapper {
-      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      top: 88px;
+      bottom: 0;
     }
   }
 </style>

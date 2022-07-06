@@ -9,8 +9,6 @@ const files = require.context('./modules', false, /.js$/)
 
 const fileObj = getDirTogether(files, {})
 
-console.log('fileObj', fileObj)
-
 export default new Vuex.Store({
   state: {
   },

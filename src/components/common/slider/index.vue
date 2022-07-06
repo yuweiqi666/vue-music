@@ -35,8 +35,10 @@ export default {
     }
   },
   mounted () {
-    this.setSliderWidth()
-    this.initSlider()
+    this.$nextTick(() => {
+      this.setSliderWidth()
+      this.initSlider()
+    })
   },
   methods: {
     setSliderWidth () {
@@ -75,7 +77,7 @@ export default {
 </script>
 
 <style scoped lang='scss'>
-@import '../../../assets/style/variable.scss';
+@import '@assets/style/variable.scss';
 .slider {
   position: relative;
   overflow: hidden;

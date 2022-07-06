@@ -19,11 +19,13 @@ import './plugins/betterscroll'
 // vue-lazyload 图片懒加载
 import './plugins/lazyload'
 
+// 全局过滤器
+import '@/filters/index'
+
 // 获取设备系统
 const deviceMsg = window.navigator.userAgent
-console.log('device', deviceMsg)
 const deviceOs = getMobileOs(deviceMsg)
-store.commit('GET_DEVICE_MSG', deviceOs)
+store.commit('device/GET_DEVICE_MSG', deviceOs)
 
 Vue.config.productionTip = false
 

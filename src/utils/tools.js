@@ -30,3 +30,8 @@ export const getDirTogether = (modulePath, initValue) => {
 
   return result
 }
+
+// 获取0~x之间的随机数 前闭后开
+export const getRandomNum = (num = 1) => {
+  return Math.round(Math.random() * num)
+}

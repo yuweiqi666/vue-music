@@ -27,7 +27,14 @@ const routes = [
       {
         name: 'singer',
         path: 'singer',
-        component: () => import('../views/singer')
+        component: () => import('../views/singer'),
+        children: [
+          {
+            name: 'song',
+            path: 'song/:id',
+            component: () => import('../views/song')
+          }
+        ]
       },
       {
         name: 'rank',

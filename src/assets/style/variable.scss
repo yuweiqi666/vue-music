@@ -10,8 +10,8 @@ $color-text: #fff;
 $color-text-d: rgba(255, 255, 255, 0.3);
 $color-text-l: rgba(255, 255, 255, 0.5);
 $color-text-ll: rgba(255, 255, 255, 0.8);
-
-
+$color-text-singer: hsla(0, 0%, 100%, .5);
+$color-music-list-img-mask: rgba(7, 17, 27, .4);
 
 // 字体定义规范
 $font-size-small-s: 10px;
@@ -20,3 +20,5 @@ $font-suze-medium: 14px;
 $font-size-medium-x: 16px;
 $font-size-large: 18px;
 $font-size-large-x: 22px; 
+$font-size-iconfont-big: 50px;
+$font-size-iconfont-medium: 40px

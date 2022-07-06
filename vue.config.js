@@ -19,6 +19,10 @@ module.exports = {
       .options({
         symbolId: 'icon-[name]'
       })
+    config.resolve.alias
+      .set('@assets', resolve('src/assets'))
+      .set('@components', resolve('src/components'))
+      .set('@http', resolve('src/http'))
   },
   configureWebpack: () => ({
 
