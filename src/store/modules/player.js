@@ -14,7 +14,8 @@ const state = {
   // 歌曲图片
   pic: '',
   // 歌词
-  lyric: ''
+  lyric: '',
+  currentLyricLineNum: 0
 }
 
 const mutations = {
@@ -56,6 +57,12 @@ const mutations = {
   },
   update_playing (state, payload) {
     state.playing = payload
+  },
+  init_mode (state) {
+    state.mode = playMode.sequence
+  },
+  update_currentLyricLineNum (state, payload) {
+    state.currentLyricLineNum = payload
   }
 }
 
@@ -86,12 +93,12 @@ const actions = {
       }
     })
   },
-  initPlayer ({ state, commit }, { index, isFullScreen, list }) {
+  initPlayer ({ state, commit, dispatch }, { index, isFullScreen, list }) {
+    commit('init_mode')
     commit('update_currentIndex', index)
     commit('update_fullScreen', isFullScreen)
     commit('update_sequenceList', list)
     commit('update_playList', { list, mode: state.mode })
-    commit('update_playing', true)
   },
   updatePlayMode ({ state, commit, getters }) {
     const currentSongId = getters.currentSong.id
@@ -113,12 +120,19 @@ const actions = {
     })
   },
 
-  async getMusicLyric (context, payload) {
+  async getMusicLyric ({ state }, payload) {
     return new Promise((resolve, reject) => {
       getMusicLyricApi({
         id: payload
       }).then(res => {
-        resolve(res?.data?.lrc?.lyric)
+        const relLyric = res?.data?.lrc?.lyric.replace(/(?<=\[)(.+?)(?=\])/g, value => {
+          if (value.length === 9) {
+            return value.slice(0, value.length - 1)
+          } else {
+            return value
+          }
+        })
+        resolve(relLyric)
       })
     })
   },

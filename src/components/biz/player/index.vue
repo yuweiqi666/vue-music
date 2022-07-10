@@ -19,12 +19,40 @@
           </div>
           <div class="fullscreen-player-desc">{{currentSong.desc}}</div>
         </div>
-        <div class="fullscreen-player-content" ref="fullscreenPlayerContentRef">
-          <div class="fullscreen-player-content-cd-wrapper" ref="cdWrapper">
-            <div class="fullscreen-player-content-cd cdRoteta" :class="pauseRotateClass" ref="fullscreenPlayerRef">
-              <img width="100%" height="100%" :src="pic" alt="">
+        <div
+          class="fullscreen-player-content-wrapper"
+          ref="fullscreenPlayerContentWrapperRef"
+          @touchstart='handleTouchStart'
+          @touchmove='handleTouchMove'
+          @touchend='handleTouchEnd'
+        >
+          <div class="fullscreen-player-content" ref="fullscreenPlayerContentRef">
+            <div class="fullscreen-player-content-cd-wrapper" ref="cdWrapper">
+              <div class="fullscreen-player-content-cd cdRoteta" :class="pauseRotateClass" ref="fullscreenPlayerRef">
+                <img width="100%" height="100%" :src="pic" alt="">
+              </div>
+              <div class="fullscreen-player-content-needle" ref="cdNeedle"></div>
+              <div class="fullscreen-player-current-lyric">{{currentLyric}}</div>
             </div>
-            <div class="fullscreen-player-content-needle" ref="cdNeedle"></div>
+          </div>
+          <Scroll :data='lyricObj && lyricObj.lines' ref="scroll">
+            <div class="fullscreen-player-lyric">
+              <div v-if="lyricObj">
+                <div
+                  class="fullscreen-player-lyric-line"
+                  :class="currentLyricLineNum === index ? 'fullscreen-player-lyric-line-hightLight' : ''"
+                  v-for="(line, index) in lyricObj.lines"
+                  :key="index"
+                  ref="lyricLines"
+                >
+                  {{line.txt}}
+                </div>
+              </div>
+            </div>
+          </Scroll>
+          <div class="fullscreen-player-content-dots">
+            <div class="fullscreen-player-content-dots-item" :class="currentPlayerPage === 1 ? 'fullscreen-player-content-dots-item-active' : ''"></div>
+            <div class="fullscreen-player-content-dots-item" :class="currentPlayerPage === 2 ? 'fullscreen-player-content-dots-item-active' : ''"></div>
           </div>
         </div>
         <div class="fullscreen-player-bottom">
@@ -33,6 +61,7 @@
             :dt='currentSong.dt'
             ref="processBar"
             @currentTimeUpdate='currentTimeUpdate'
+            @touchmoveend='processTouchMoveEnd'
           ></process-bar>
           <div class="fullscreen-player-bottom-btn">
             <a href="javascript:;" @click="updatePlayMode">
@@ -94,17 +123,26 @@ import { playMode } from '@assets/constant'
 import animations from 'create-keyframe-animation'
 import ProcessBar from '@components/common/processbar'
 import ProcessCircle from '@components/common/processcircle'
+import Scroll from '@components/common/scroll'
+import Lyric from 'lyric-parser'
 export default {
   name: 'Player',
   components: {
     ProcessBar,
-    ProcessCircle
+    ProcessCircle,
+    Scroll
   },
   data () {
     return {
       songReady: false,
-      currentTime: 0
+      currentTime: 0,
+      lyricObj: null,
+      currentPlayerPage: 1,
+      touchX: 0
     }
+  },
+  mounted () {
+
   },
   computed: {
     ...mapState({
@@ -114,7 +152,9 @@ export default {
       url: state => state.player.url,
       playing: state => state.player.playing,
       currentIndex: state => state.player.currentIndex,
-      mode: state => state.player.mode
+      mode: state => state.player.mode,
+      lyric: state => state.player.lyric,
+      currentLyricLineNum: state => state.player.currentLyricLineNum
     }),
     ...mapGetters('player', [
       'currentSong'
@@ -133,12 +173,16 @@ export default {
       const playModeValueMap = Object.values(playMode)
       const index = playModeValueMap.indexOf(this.mode)
       return playModeKeyMap[index]
+    },
+    currentLyric () {
+      return this.lyricObj?.lines[this.currentLyricLineNum]?.txt
     }
   },
   methods: {
     ...mapMutations('player', {
       updateFullScreen: 'update_fullScreen',
-      updatePlaying: 'update_playing'
+      updatePlaying: 'update_playing',
+      updateCurrentLyricLineNum: 'update_currentLyricLineNum'
     }),
     ...mapActions('player', [
       'checkoutSong',
@@ -147,19 +191,29 @@ export default {
     handleTimeUpdate (e) {
       this.currentTime = e.target.currentTime * 1000
     },
+    processTouchMoveEnd (currentTime) {
+      if (this.lyricObj) {
+        this.lyricObj.seek(currentTime)
+      }
+    },
     controlPlay () {
       this.updatePlaying(!this.playing)
+      if (this.lyricObj) {
+        this.lyricObj.togglePlay()
+      }
     },
     handleCheckoutSong (step) {
-      const audio = this.$refs.audio
       if (!this.songReady) return
       if (!this.playing) this.controlPlay()
       this.songReady = false
       this.checkoutSong({ step }).then(res => {
-        console.log('切换歌曲')
-        this.$nextTick(() => {
-          audio.play()
-        })
+        if (this.mode === playMode.loop) {
+          this.$nextTick(() => {
+            const audio = this.$refs.audio
+            audio.play()
+            if (this.lyricObj) this.lyricObj.seek(0)
+          })
+        }
       })
     },
     handleClickBack () {
@@ -231,6 +285,51 @@ export default {
       const y = document.documentElement.clientHeight - (fullscreenPlayerTop + 0.5 * fullscreenPlayerHeight) - 0.5 * miniPlayerHeight - miniPlayerTop
       const scale = miniPlayerWidth / fullscreenPlayerWidth
       return { x, y, scale }
+    },
+    handleTouchStart (e) {
+      this.$refs.scroll.$el.style.transition = 'unset'
+      this.$refs.fullscreenPlayerContentRef.style.transition = 'unset'
+      this.touchX = e.touches[0].pageX
+    },
+    handleTouchMove (e) {
+      const playerContent = this.$refs.fullscreenPlayerContentRef
+      const moveX = this.touchX - e.touches[0].pageX
+      if (this.currentPlayerPage === 1) {
+        if (moveX < 0) return
+
+        const touchX = window.innerWidth - moveX
+        this.$refs.scroll.$el.style.left = `${touchX}px`
+      } else if (this.currentPlayerPage === 2) {
+        if (moveX > 0) return
+        this.$refs.scroll.$el.style.left = `${-moveX}px`
+      }
+      const percentOpacity = Math.min(window.innerWidth, this.$refs.scroll.$el.offsetLeft)
+      playerContent.style.opacity = percentOpacity / window.innerWidth
+    },
+    handleTouchEnd (e) {
+      if (e.changedTouches[0]?.pageX - this.touchX === 0) return
+      const playerContent = this.$refs.fullscreenPlayerContentRef
+      this.$refs.scroll.$el.style.transition = 'all 0.5s'
+      playerContent.style.transition = 'all 0.5s'
+      if (this.currentPlayerPage === 1) {
+        if (this.touchX - e.changedTouches[0]?.pageX > 80) {
+          this.$refs.scroll.$el.style.left = '0'
+          playerContent.style.opacity = '0'
+          this.currentPlayerPage = 2
+        } else {
+          this.$refs.scroll.$el.style.left = `${window.innerWidth}px`
+          playerContent.style.opacity = '1'
+        }
+      } else if (this.currentPlayerPage === 2) {
+        if (e.changedTouches[0]?.pageX - this.touchX > 80) {
+          this.$refs.scroll.$el.style.left = `${window.innerWidth}px`
+          playerContent.style.opacity = '1'
+          this.currentPlayerPage = 1
+        } else {
+          this.$refs.scroll.$el.style.left = '0'
+          playerContent.style.opacity = '0'
+        }
+      }
     }
   },
   watch: {
@@ -261,7 +360,31 @@ export default {
       handler (n, o) {
         if (n) {
           this.$refs.processBar.updateProcess(this.currentTime)
+          this.$nextTick(() => {
+            const scrollDom = this.$refs.scroll.$el
+            if (this.currentPlayerPage === 1) {
+              scrollDom.style.left = `${window.innerWidth}px`
+            } else if (this.currentPlayerPage === 2) {
+              scrollDom.style.left = '0'
+            }
+          })
         }
+      }
+    },
+    lyric: {
+      handler (n, o) {
+        if (this.lyricObj) this.lyricObj.stop()
+        this.lyricObj = new Lyric(n, ({ lineNum, text }) => {
+          this.updateCurrentLyricLineNum(lineNum)
+          // 控制歌词滚动
+          const lyricLines = this.$refs.lyricLines
+          if (this.currentLyricLineNum > 5) {
+            this.$refs.scroll.pageScrollToElement(lyricLines[this.currentLyricLineNum - 5], 1000)
+          } else {
+            this.$refs.scroll.pageScrollToElement(lyricLines[0], 1000)
+          }
+        })
+        if (this.playing) this.lyricObj.play()
       }
     }
   }
@@ -340,49 +463,98 @@ export default {
         }
       }
       .fullscreen-player-desc {
-        font-size: $font-suze-medium;
+        font-size: $font-size-medium;
         text-align: center;
         line-height: 20px;
       }
     }
-    .fullscreen-player-content {
+    .fullscreen-player-content-wrapper {
       position: fixed;
       top: 80px;
       bottom: 170px;
       width: 100%;
-      .fullscreen-player-content-cd-wrapper {
-        position: relative;
+      .fullscreen-player-content {
         width: 100%;
-        height: 0;
-        padding-top: 80%;
-        transition: all 0.4s;
-        .fullscreen-player-content-cd {
-          position: absolute;
-          top: 30px;
-          left: 0;
-          right: 0;
-          margin: auto;
-          width: 80%;
-          height: 100%;
-          overflow: hidden;
-          &>img {
-            border-radius: 100%;
-            border: 10px solid hsla(0,0%,100%,.1);
-            box-sizing: border-box;
+        height: 100%;
+        .fullscreen-player-content-cd-wrapper {
+          position: relative;
+          width: 100%;
+          height: 0;
+          padding-top: 80%;
+          transition: all 0.4s;
+          .fullscreen-player-content-cd {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 80%;
+            height: 100%;
+            overflow: hidden;
+            &>img {
+              border-radius: 100%;
+              border: 10px solid hsla(0,0%,100%,.1);
+              box-sizing: border-box;
+            }
+          }
+          .fullscreen-player-content-needle {
+            position: absolute;
+            top: 0;
+            left: 40%;
+            transform-origin: 12px 12px;
+            transform: rotate(-25deg);
+            transition: all 0.6s;
+            width: 73px;
+            height: 118px;
+            background: url('../../../assets/imgs/needle@3x.png');
+            background-size: 100% 100%;
+          }
+          .fullscreen-player-current-lyric {
+            position: absolute;
+            top: 375px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: $font-size-medium;
+            color: $color-text-singer;
           }
         }
-        .fullscreen-player-content-needle {
-          position: absolute;
-          top: 0;
-          left: 40%;
-          transform-origin: 12px 12px;
-          transform: rotate(-25deg);
-          transition: all 0.6s;
-          width: 73px;
-          height: 118px;
-          // @include bg-image('../../../assets/imgs/needle');
-          background: url('../../../assets/imgs/needle@3x.png');
-          background-size: 100% 100%;
+      }
+      .scroll {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        .fullscreen-player-lyric {
+          // width: 100%;
+          // height: 100%;
+          font-size: $font-size-medium;
+          white-space: pre-line;
+          text-align: center;
+          .fullscreen-player-lyric-line {
+            line-height: 32px;
+            color: $color-text-singer;
+          }
+          .fullscreen-player-lyric-line-hightLight {
+            color: $color-text;
+          }
+        }
+      }
+      .fullscreen-player-content-dots {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        margin-top: 10px;
+        display: flex;
+        .fullscreen-player-content-dots-item {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: $color-text-singer;
+          margin: 0 2px;
+        }
+        .fullscreen-player-content-dots-item-active {
+          width: 20px;
+          border-radius: 5px;
+          background-color: $color-text-dark;
         }
       }
     }
@@ -434,7 +606,7 @@ export default {
         line-height: 20px;
         width: 210px;
         .mini-player-left-text-name {
-          font-size: $font-suze-medium;
+          font-size: $font-size-medium;
           color: $color-text;
           margin-bottom: 2px;
           @include no-wrapper();

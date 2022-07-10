@@ -1,5 +1,6 @@
 // 颜色定义规范
 $background-color: #222;
+$background-color-l: #333;
 $background-color-d: rgba(0, 0, 0, 0.3);
 $background-highlight-color: #333;
 $background-dialog-color: #666;
@@ -10,15 +11,18 @@ $color-text: #fff;
 $color-text-d: rgba(255, 255, 255, 0.3);
 $color-text-l: rgba(255, 255, 255, 0.5);
 $color-text-ll: rgba(255, 255, 255, 0.8);
-$color-text-singer: hsla(0, 0%, 100%, .5);
-$color-music-list-img-mask: rgba(7, 17, 27, .4);
+$color-text-l-singer: hsla(0, 0%, 100%, 0.3);
+$color-text-singer: hsla(0, 0%, 100%, 0.5);
+$color-text-dark: hsla(0, 0%, 100%, 0.8);
+$color-music-list-img-mask: rgba(7, 17, 27, 0.4);
 
 // 字体定义规范
 $font-size-small-s: 10px;
 $font-size-small: 12px;
-$font-suze-medium: 14px;
+$font-size-medium: 14px;
 $font-size-medium-x: 16px;
 $font-size-large: 18px;
-$font-size-large-x: 22px; 
+$font-size-large-x: 22px;
+$font-size-large-xx: 24px;
 $font-size-iconfont-big: 50px;
-$font-size-iconfont-medium: 40px
+$font-size-iconfont-medium: 40px;

@@ -53,6 +53,7 @@ export default {
       const currentTime = this.getCurrentTimeByProcess(e.changedTouches[0]?.pageX)
       this.$emit('update:currentTime', currentTime)
       this.isChangeProcess = true
+      this.$emit('touchmoveend', currentTime)
     },
     handleTouchmove (e) {
       const currentTime = this.getCurrentTimeByProcess(e.targetTouches[0]?.pageX)

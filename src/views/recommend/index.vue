@@ -22,7 +22,7 @@
             热门歌单推荐
           </div>
           <div class="recommend-list-wrapper">
-            <div v-for="item in recommendList" :key="item.id" class="recommend-list-wrapper-item">
+            <div v-for="item in recommendList" :key="item.id" class="recommend-list-wrapper-item" @click="handleClickSongItem(item)">
               <div class="recommend-list-wrapper-item-side-img">
                 <img v-lazy="item.picUrl" alt="">
               </div>
@@ -41,6 +41,7 @@
       <!-- loading加载组件 -->
       <loading v-show="!recommendList" />
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -104,6 +105,18 @@ export default {
     handlePlayListRefresh (playList) {
       this.$refs.recommend.style.bottom = playList && playList.length ? '60px' : 0
       this.$refs.scroll.refresh()
+    },
+    handleClickSongItem (data) {
+      this.$router.push({
+        name: 'songListDetail',
+        params: {
+          id: data.id
+        },
+        query: {
+          name: data.name,
+          picUrl: data.picUrl
+        }
+      })
     }
   }
 }
@@ -141,7 +154,7 @@ export default {
         height: 65px;
         line-height: 65px;
         text-align: center;
-        font-size: $font-suze-medium;
+        font-size: $font-size-medium;
         color: $color-theme;
       }
       .recommend-list-wrapper {
@@ -162,7 +175,7 @@ export default {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            font-size: $font-suze-medium;
+            font-size: $font-size-medium;
             .recommend-list-wrapper-item-side-content-title {
               margin-bottom: 10px;
               color: $color-text-ll;

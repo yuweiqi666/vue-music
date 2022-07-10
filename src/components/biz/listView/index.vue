@@ -204,7 +204,7 @@ export default {
           overflow: hidden;
         }
         .singer-name {
-          font-size: $font-suze-medium;
+          font-size: $font-size-medium;
           color: $color-text-singer;
           line-height: 50px;
           margin-left: 14px;

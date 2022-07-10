@@ -51,7 +51,7 @@ export default {
         flex: 1;
         text-align: center;
         line-height: 44px;
-        font-size: $font-suze-medium;
+        font-size: $font-size-medium;
         color: $color-text-l;
         .router-link-active {
           span {

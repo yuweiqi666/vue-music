@@ -15,7 +15,7 @@
     </div>
     <div class="music-list-scroll-wrapper" ref="listScrollWrapper">
       <scroll :data='list' @pageScroll='handlePageScroll' ref="scroll">
-        <song-list :data='list' @selectSong='handleSelectSong'></song-list>
+        <song-list :data='list' @selectSong='handleSelectSong' :showRank='showRank'></song-list>
       </scroll>
     </div>
   </div>
@@ -24,7 +24,7 @@
 <script>
 import Scroll from '@components/common/scroll'
 import SongList from '@components/biz/songList'
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import { playlistUpdate } from '@/mixins/playlistUpdate'
 export default {
   name: 'MusicList',
@@ -38,6 +38,10 @@ export default {
     },
     list: {
       type: Array
+    },
+    showRank: {
+      type: Boolean,
+      default: false
     }
   },
   components: {
@@ -50,6 +54,9 @@ export default {
     })
   },
   methods: {
+    ...mapMutations('player', {
+      updatePlaying: 'update_playing'
+    }),
     handleClickBack () {
       this.$router.back(-1)
     },
@@ -80,12 +87,13 @@ export default {
     },
     async handleSelectSong (data, index) {
       try {
-        await this.getPlayerData({ id: data.id })
+        this.updatePlaying(true)
         this.initPlayer({
           list: this.list,
           index,
           isFullScreen: true
         })
+        await this.getPlayerData({ id: data.id })
       } catch (error) {
         console.log('error', error)
       }

@@ -34,7 +34,6 @@ export default {
       this.$refs.listView.refresh()
     },
     handleClickSinger (data) {
-      console.log('歌手id', data)
       const { id, picUrl, name } = data
       this.$router.push({
         name: 'song',

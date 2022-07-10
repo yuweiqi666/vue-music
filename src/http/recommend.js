@@ -11,3 +11,10 @@ export const getBannerApi = params => {
 export const getHotListApi = () => {
   return request('/personalized')
 }
+
+// 获取歌单详情
+export const getSongListDetailApi = params => {
+  return request('/playlist/detail', {
+    params
+  })
+}

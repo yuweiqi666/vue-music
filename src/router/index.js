@@ -22,7 +22,14 @@ const routes = [
       {
         name: 'recommend',
         path: 'recommend',
-        component: () => import('../views/recommend')
+        component: () => import('../views/recommend'),
+        children: [
+          {
+            name: 'songListDetail',
+            path: 'songListDetail/:id',
+            component: () => import('../views/songListDetail')
+          }
+        ]
       },
       {
         name: 'singer',
@@ -39,7 +46,14 @@ const routes = [
       {
         name: 'rank',
         path: 'rank',
-        component: () => import('../views/rank')
+        component: () => import('../views/rank'),
+        children: [
+          {
+            name: 'rankDetail',
+            path: 'rankDetail/:id',
+            component: () => import('../views/rankDetail')
+          }
+        ]
       },
       {
         name: 'search',

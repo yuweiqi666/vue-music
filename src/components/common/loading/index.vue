@@ -26,6 +26,7 @@ export default {
     .loading-text {
       font-size: $font-size-small;
       color: $color-text-d;
+      line-height: 20px;
     }
   }
 </style>
