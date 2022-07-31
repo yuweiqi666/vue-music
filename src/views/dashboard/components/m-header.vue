@@ -2,9 +2,9 @@
   <div class="m-header">
     <div class="m-logo"></div>
     <div class="m-title">Chicken Music</div>
-    <div class="m-mine">
+    <a href="javascript:;" class="m-mine" @click="$router.push('/dashboard/user')">
       <svg-icon icon-class="mine"></svg-icon>
-    </div>
+    </a>
   </div>
 </template>
 

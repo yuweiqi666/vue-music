@@ -9,16 +9,16 @@ const routes = [
     redirect: '/dashboard'
   },
   {
-    name: 'login',
-    path: '/login',
-    component: () => import('../views/login')
-  },
-  {
     name: 'dashboard',
     path: '/dashboard',
     component: () => import('../views/dashboard'),
     redirect: '/dashboard/recommend',
     children: [
+      {
+        name: 'user',
+        path: 'user',
+        component: () => import('../views/user')
+      },
       {
         name: 'recommend',
         path: 'recommend',

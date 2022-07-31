@@ -76,8 +76,8 @@
             <a href="javascript:;" @click="handleCheckoutSong(1)">
               <svg-icon icon-class="next"></svg-icon>
             </a>
-            <a href="javascript:;">
-              <svg-icon icon-class="noFavorites"></svg-icon>
+            <a href="javascript:;" @click="handleFavSong">
+              <svg-icon :icon-class="favClass"></svg-icon>
             </a>
           </div>
         </div>
@@ -100,7 +100,7 @@
               <svg-icon :icon-class="palyIcon" class="icon-play"></svg-icon>
             </Process-circle>
           </a>
-          <a href="javascript:;">
+          <a href="javascript:;" @click.stop="playListPop=true">
             <svg-icon icon-class="playlist" class="icon-playlist"></svg-icon>
           </a>
         </div>
@@ -114,6 +114,8 @@
       @canplay="songReady = true"
       @timeupdate="handleTimeUpdate"
     ></audio>
+    <!-- 播放列表 -->
+    <play-list :playListPop.sync='playListPop'></play-list>
   </div>
 </template>
 
@@ -125,12 +127,14 @@ import ProcessBar from '@components/common/processbar'
 import ProcessCircle from '@components/common/processcircle'
 import Scroll from '@components/common/scroll'
 import Lyric from 'lyric-parser'
+import PlayList from '@components/biz/playList'
 export default {
   name: 'Player',
   components: {
     ProcessBar,
     ProcessCircle,
-    Scroll
+    Scroll,
+    PlayList
   },
   data () {
     return {
@@ -138,7 +142,9 @@ export default {
       currentTime: 0,
       lyricObj: null,
       currentPlayerPage: 1,
-      touchX: 0
+      touchX: 0,
+      playListPop: false,
+      isFavSong: false
     }
   },
   mounted () {
@@ -154,7 +160,8 @@ export default {
       currentIndex: state => state.player.currentIndex,
       mode: state => state.player.mode,
       lyric: state => state.player.lyric,
-      currentLyricLineNum: state => state.player.currentLyricLineNum
+      currentLyricLineNum: state => state.player.currentLyricLineNum,
+      favSongList: state => state.search.favSongList
     }),
     ...mapGetters('player', [
       'currentSong'
@@ -176,6 +183,9 @@ export default {
     },
     currentLyric () {
       return this.lyricObj?.lines[this.currentLyricLineNum]?.txt
+    },
+    favClass () {
+      return this.isFavSong ? 'favorite' : 'noFavorites'
     }
   },
   methods: {
@@ -183,6 +193,11 @@ export default {
       updateFullScreen: 'update_fullScreen',
       updatePlaying: 'update_playing',
       updateCurrentLyricLineNum: 'update_currentLyricLineNum'
+    }),
+    ...mapMutations('search', {
+      addFavSong: 'add_favSong',
+      deleteFavSong: 'delete_favSong',
+      addHistoryPlay: 'add_historyPlay'
     }),
     ...mapActions('player', [
       'checkoutSong',
@@ -207,7 +222,7 @@ export default {
       if (!this.playing) this.controlPlay()
       this.songReady = false
       this.checkoutSong({ step }).then(res => {
-        if (this.mode === playMode.loop) {
+        if (this.mode === playMode.loop || this.playList.length === 1) {
           this.$nextTick(() => {
             const audio = this.$refs.audio
             audio.play()
@@ -330,6 +345,14 @@ export default {
           playerContent.style.opacity = '0'
         }
       }
+    },
+    handleFavSong () {
+      if (!this.isFavSong) {
+        this.addFavSong(this.currentSong)
+      } else {
+        this.deleteFavSong(this.currentSong)
+      }
+      this.isFavSong = !this.isFavSong
     }
   },
   watch: {
@@ -368,6 +391,11 @@ export default {
               scrollDom.style.left = '0'
             }
           })
+          // 判断是否为收藏歌曲
+          const flag = this.favSongList.some(item => item.id === this.currentSong.id)
+          this.isFavSong = flag
+          // 添加历史歌曲
+          this.addHistoryPlay(this.currentSong)
         }
       }
     },

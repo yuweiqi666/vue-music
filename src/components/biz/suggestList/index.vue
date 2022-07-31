@@ -12,7 +12,7 @@
           <loading ref="loading"></loading>
         </div>
       </div>
-      <div v-else>
+      <div v-show="isNoResult">
         <no-result text="抱歉，暂无搜索结果"></no-result>
       </div>
     </scroll>
@@ -23,8 +23,10 @@
 import Loading from '@components/common/loading'
 import Scroll from '@components/common/scroll'
 import { getKwSearchApi } from '@/http/search'
-import { mapActions, mapMutations } from 'vuex'
+import { mapState, mapActions, mapMutations, mapGetters } from 'vuex'
 import NoResult from '@components/common/noResult'
+import { trottle } from '@/utils/tools'
+import { playMode } from '@assets/constant'
 export default {
   name: 'SuggestList',
   components: {
@@ -42,21 +44,42 @@ export default {
       suggestList: [],
       isLoading: false,
       isFinish: false,
-      offset: 0
+      offset: 0,
+      isNoResult: false
     }
+  },
+  computed: {
+    ...mapState({
+      sequenceList: state => state.player.sequenceList,
+      mode: state => state.player.mode,
+      playList: state => state.player.playList,
+      currentIndex: state => state.player.currentIndex
+    }),
+    ...mapGetters('player', [
+      'currentSong'
+    ])
   },
   methods: {
     ...mapMutations('player', {
-      updatePlaying: 'update_playing'
+      updatePlaying: 'update_playing',
+      setSequenceList: 'set_sequenceList',
+      updateFullScreen: 'update_fullScreen',
+      setPlayList: 'set_playList',
+      updateSequenceList: 'update_sequenceList',
+      updatePlayList: 'update_playList'
+    }),
+    ...mapMutations('search', {
+      updateHistoryList: 'update_historyList'
     }),
     ...mapActions('player', [
       'getPlayerData',
-      'initPlayer'
+      'checkoutSong'
     ]),
     async getKwSearch (query) {
       const res = await getKwSearchApi(query)
       if (!res.data.result.songCount) {
         this.isFinish = true
+        this.isNoResult = true
         return
       }
       const currentSuggestList = res.data.result.songs.map(item => ({
@@ -81,12 +104,31 @@ export default {
     async handleClickSearchSong (data, index) {
       try {
         this.updatePlaying(true)
-        this.initPlayer({
-          list: this.suggestList,
-          index,
-          isFullScreen: true
-        })
-        await this.getPlayerData({ id: data.id })
+        const isExistSong = this.sequenceList.some(item => item.id === data.id)
+        // 更新播放歌单
+        if (!isExistSong) {
+          if (!this.playList.length) {
+            this.setPlayList([data])
+            this.updateSequenceList(this.playList)
+          } else {
+            this.setSequenceList(data)
+          }
+        } else {
+          this.updateFullScreen(true)
+          if (this.currentSong.id === data.id) return false
+        }
+        // 切换当前播放歌曲
+        if (playMode.loop === this.mode) {
+          this.setPlayList([data])
+          this.checkoutSong({ step: 0 })
+        } else {
+          if (playMode.random === this.mode) this.updatePlayList({ list: this.sequenceList, mode: this.mode })
+          const currentPlayIndex = this.playList.map(item => item.id).indexOf(data.id)
+          const step = currentPlayIndex - this.currentIndex
+          console.log('step', step)
+          this.checkoutSong({ step })
+        }
+        this.updateFullScreen(true)
       } catch (error) {
         console.log('error', error)
       }
@@ -94,10 +136,11 @@ export default {
   },
   watch: {
     query: {
-      handler (n, o) {
-        console.log('n', n)
+      handler: trottle(function (n, o) {
         this.suggestList = []
         if (n) {
+          // 添加关键词到搜索历史
+          this.updateHistoryList(n)
           this.getKwSearch({
             keywords: n,
             offset: 0
@@ -105,9 +148,9 @@ export default {
         } else {
           this.isFinish = false
           this.offset = 0
-          this.$refs.suggestWrapper.style.paddingBottom = '60px'
+          // this.$refs.suggestWrapper.style.paddingBottom = '60px'
         }
-      }
+      }, 2000)
     },
     isLoading: {
       handler (n, o) {
@@ -123,8 +166,8 @@ export default {
     isFinish: {
       handler (n, o) {
         if (n) {
-          this.$refs.suggestWrapper.style.paddingBottom = 0
           this.$nextTick(() => {
+            this.$refs.suggestWrapper.style.paddingBottom = 0
             this.$refs.scroll.refresh()
           })
         }

@@ -48,3 +48,24 @@
     }
   }
 }
+
+@mixin border-1px-right ($color) {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    border-right: 1px solid $color;
+    content: '';
+
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      transform: scaleX(0.5);
+    }
+
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      transform: scaleX(0.3);
+    }
+  }
+}

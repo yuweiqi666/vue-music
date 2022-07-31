@@ -15,7 +15,9 @@ const state = {
   pic: '',
   // 歌词
   lyric: '',
-  currentLyricLineNum: 0
+  currentLyricLineNum: 0,
+  // 歌单id
+  playerId: null
 }
 
 const mutations = {
@@ -37,8 +39,21 @@ const mutations = {
     }
     state.playList = playList
   },
+  set_playList (state, payload) {
+    state.playList = payload
+  },
   update_sequenceList (state, payload) {
     state.sequenceList = payload
+  },
+  set_sequenceList (state, payload) {
+    const index = state.sequenceList.indexOf(state.playList[state.currentIndex])
+    state.sequenceList.splice(index + 1, 0, payload)
+  },
+  delete_sequenceList (state, payload) {
+    state.sequenceList.splice(payload, 1)
+  },
+  delete_playList (state, payload) {
+    state.playList.splice(payload, 1)
   },
   update_currentIndex (state, payload) {
     state.currentIndex = payload
@@ -63,6 +78,12 @@ const mutations = {
   },
   update_currentLyricLineNum (state, payload) {
     state.currentLyricLineNum = payload
+  },
+  update_id (state, payload) {
+    state.playerId = payload
+  },
+  set_Random_mode (state, playload) {
+    state.mode = playMode.random
   }
 }
 
@@ -70,7 +91,9 @@ const actions = {
   checkoutSong ({ state, commit, dispatch, getters }, { step }) {
     return new Promise((resolve, reject) => {
       let relIndex = state.currentIndex + step
-      if (relIndex >= state.playList.length - 1) relIndex = 0
+      if (relIndex > state.playList.length - 1) {
+        relIndex = relIndex - state.playList.length
+      }
       if (relIndex < 0) relIndex = state.playList.length - 1
       commit('update_currentIndex', relIndex)
       dispatch('getPlayerData', { id: getters.currentSong.id }).then(resolve)
@@ -93,8 +116,9 @@ const actions = {
       }
     })
   },
-  initPlayer ({ state, commit, dispatch }, { index, isFullScreen, list }) {
+  initPlayer ({ state, commit, dispatch }, { index, isFullScreen, list, id }) {
     commit('init_mode')
+    commit('update_id', id)
     commit('update_currentIndex', index)
     commit('update_fullScreen', isFullScreen)
     commit('update_sequenceList', list)

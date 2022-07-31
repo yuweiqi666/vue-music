@@ -1,6 +1,7 @@
 <template>
   <transition name='slide' appear>
     <music-list
+      :id='$route.params.id'
       :name='$route.query.name'
       :pic='$route.query.picUrl'
       :list='formatMusicList'

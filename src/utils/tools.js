@@ -35,3 +35,23 @@ export const getDirTogether = (modulePath, initValue) => {
 export const getRandomNum = (num = 1) => {
   return Math.round(Math.random() * num)
 }
+
+// 节流函数
+export const trottle = (fn, time) => {
+  let previous = 0
+  let timer
+  return function () {
+    const now = +new Date()
+    if (now - previous >= time) {
+      fn.apply(this, arguments)
+      previous = now
+    } else if (!timer) {
+      const delay = time - (now - previous)
+      timer = setTimeout(() => {
+        fn.apply(this, arguments)
+        previous = +new Date()
+        timer = null
+      }, delay)
+    }
+  }
+}

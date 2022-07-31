@@ -8,7 +8,7 @@
     </div>
     <div class="music-list-img-wrapper"  :style="{backgroundImage: `url(${pic})`}" ref="musicListImg">
       <div class="music-list-img-mask" ref="musicListImgMaskRef"></div>
-      <div class="music-list-allplay" ref="musicListAllPlay" v-if="list && list.length">
+      <div class="music-list-allplay" ref="musicListAllPlay" v-if="list && list.length" @click="handleClickRandomPlay">
         <svg-icon icon-class='play' class="icon-play"></svg-icon>
         <span class="icon-play-text">随机播放全部</span>
       </div>
@@ -24,8 +24,10 @@
 <script>
 import Scroll from '@components/common/scroll'
 import SongList from '@components/biz/songList'
-import { mapActions, mapMutations } from 'vuex'
+import { mapState, mapActions, mapMutations, mapGetters } from 'vuex'
 import { playlistUpdate } from '@/mixins/playlistUpdate'
+import { playMode } from '@assets/constant'
+import { getRandomNum } from '@/utils/tools'
 export default {
   name: 'MusicList',
   mixins: [playlistUpdate],
@@ -42,11 +44,26 @@ export default {
     showRank: {
       type: Boolean,
       default: false
+    },
+    id: {
+      type: [String, Number]
     }
   },
   components: {
     Scroll,
     SongList
+  },
+  computed: {
+    ...mapState({
+      playerId: state => state.player.playerId,
+      playList: state => state.player.playList,
+      sequenceList: state => state.player.sequenceList,
+      currentIndex: state => state.player.currentIndex,
+      mode: state => state.player.mode
+    }),
+    ...mapGetters('player', [
+      'currentSong'
+    ])
   },
   mounted () {
     this.$nextTick(() => {
@@ -54,8 +71,27 @@ export default {
     })
   },
   methods: {
+    handleClickRandomPlay () {
+      const randomNum = getRandomNum(this.list.length)
+      this.initPlayer({
+        list: JSON.parse(JSON.stringify(this.list)),
+        index: randomNum,
+        isFullScreen: true,
+        id: this.id
+      })
+      this.getPlayerData({ id: this.list[randomNum].id })
+      this.updatePlayList({ list: this.sequenceList, mode: playMode.random })
+      const currentIndex = this.playList.map(item => item.id).indexOf(this.currentSong.id)
+      this.updateCurrentIndex(currentIndex)
+      this.setRandomMode()
+    },
     ...mapMutations('player', {
-      updatePlaying: 'update_playing'
+      updatePlaying: 'update_playing',
+      updateFullScreen: 'update_fullScreen',
+      setPlayList: 'set_playList',
+      updatePlayList: 'update_playList',
+      updateCurrentIndex: 'update_currentIndex',
+      setRandomMode: 'set_Random_mode'
     }),
     handleClickBack () {
       this.$router.back(-1)
@@ -87,13 +123,31 @@ export default {
     },
     async handleSelectSong (data, index) {
       try {
-        this.updatePlaying(true)
-        this.initPlayer({
-          list: this.list,
-          index,
-          isFullScreen: true
-        })
-        await this.getPlayerData({ id: data.id })
+        if (this.playerId === this.id) {
+          this.updateFullScreen(true)
+          if (this.currentSong.id === data.id) {
+            // this.updateFullScreen(true)
+            return false
+          }
+          if (playMode.loop === this.mode) {
+            this.setPlayList([data])
+            this.checkoutSong({ step: 0 })
+          } else {
+            const currentPlayIndex = this.playList.map(item => item.id).indexOf(data.id)
+            const step = currentPlayIndex - this.currentIndex
+            this.checkoutSong({ step })
+          }
+          this.updateFullScreen(true)
+        } else {
+          this.updatePlaying(true)
+          this.initPlayer({
+            list: JSON.parse(JSON.stringify(this.list)),
+            index,
+            isFullScreen: true,
+            id: this.id
+          })
+          await this.getPlayerData({ id: data.id })
+        }
       } catch (error) {
         console.log('error', error)
       }
@@ -104,7 +158,8 @@ export default {
     },
     ...mapActions('player', [
       'getPlayerData',
-      'initPlayer'
+      'initPlayer',
+      'checkoutSong'
     ])
   }
 }
