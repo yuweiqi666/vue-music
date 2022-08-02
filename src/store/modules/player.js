@@ -149,9 +149,10 @@ const actions = {
       getMusicLyricApi({
         id: payload
       }).then(res => {
-        const relLyric = res?.data?.lrc?.lyric.replace(/(?<=\[)(.+?)(?=\])/g, value => {
-          if (value.length === 9) {
-            return value.slice(0, value.length - 1)
+        const relLyric = res?.data?.lrc?.lyric.replace(/\[(.+?)\]/g, value => {
+          if (value.length === 11) {
+            const result = '[' + value.split('').slice(1, 9).join('') + ']'
+            return result
           } else {
             return value
           }
