@@ -22,6 +22,10 @@ import './plugins/lazyload'
 // 全局过滤器
 import '@/filters/index'
 
+// 挂载公共弹窗组件
+import message from '@/utils/message'
+Vue.prototype.$message = message
+
 // 获取设备系统
 const deviceMsg = window.navigator.userAgent
 const deviceOs = getMobileOs(deviceMsg)

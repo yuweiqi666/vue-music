@@ -1,4 +1,5 @@
 import { getLocalItem, setLocalItem } from '@/utils/storage.js'
+import message from '@/utils/message'
 
 const state = {
   historyList: getLocalItem('historyList') || [],
@@ -25,11 +26,13 @@ const mutations = {
   add_favSong (state, payload) {
     state.favSongList.unshift(payload)
     setLocalItem('favSongList', state.favSongList)
+    message('收藏成功')
   },
   delete_favSong (state, payload) {
     const index = state.favSongList.map(item => item.id).indexOf(payload.id)
     state.favSongList.splice(index, 1)
     setLocalItem('favSongList', state.favSongList)
+    message('取消收藏')
   },
   add_historyPlay (state, payload) {
     const index = state.historyPlayList.map(item => item.id).indexOf(payload.id)

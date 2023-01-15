@@ -527,7 +527,7 @@ export default {
           }
           .fullscreen-player-content-needle {
             position: absolute;
-            top: 0;
+            top: -10px;
             left: 40%;
             transform-origin: 12px 12px;
             transform: rotate(-25deg);

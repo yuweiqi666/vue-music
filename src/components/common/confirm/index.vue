@@ -1,13 +1,15 @@
 <template>
-  <transition name="fade">
-    <div class="confirm" v-show="isShow">
-      <div class="confirm-text">{{msg}}</div>
-      <div class="confirm-btn-wrapper">
-        <div class="cancel-btn" @click="$emit('update:isShow', false)">取消</div>
-        <div class="confirm-btn" @click="$emit('onConfirm')">确定</div>
+  <div class="confirm-wrapper" v-show="isShow">
+    <transition name="fade">
+      <div class="confirm" v-show="isShow">
+        <div class="confirm-text">{{msg}}</div>
+        <div class="confirm-btn-wrapper">
+          <div class="cancel-btn" @click="$emit('update:isShow', false)">取消</div>
+          <div class="confirm-btn" @click="$emit('onConfirm')">确定</div>
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </div>
 </template>
 
 <script>
@@ -29,9 +31,18 @@ export default {
 <style scoped lang='scss'>
 @import '@assets/style/variable.scss';
 @import '@assets/style/mixins.scss';
-  .confirm {
+  .confirm-wrapper {
+    background-color: rgba($color: #000000, $alpha: 0.5);
     position: fixed;
-    top: 300px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  .confirm {
+    position: absolute;
+    top: 35%;
     right: 0;
     left: 0;
     margin: auto;
@@ -77,20 +88,5 @@ export default {
   }
   .fade-leave-active {
     animation: scaleDia 0.2s ease reverse;
-  }
-  @keyframes scaleDia {
-    0% {
-      opacity: 0;
-      transform: scale(0);
-    }
-    80% {
-      opacity: 0.8;
-      transform: scale(1.1);
-    }
-    100% {
-      opacity: 1;
-      transform-origin: center center;
-      transform: scale(1);
-    }
   }
 </style>

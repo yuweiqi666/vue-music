@@ -1,6 +1,6 @@
 <template>
   <transition name="playlist">
-    <div class="play-list" v-show="playListPop" @click="$emit('update:playListPop', false)">
+    <div class="play-list" v-show="playListPop" @click="handleClosePlayListPop">
       <div class="list-pop" @click.stop>
         <div class="list-pop-top">
           <div class="list-pop-top-mode">
@@ -22,8 +22,8 @@
                   {{item.name}}
                 </span>
                 <span class="list-pop-content-item-right">
-                  <a href="javascript:;">
-                    <svg-icon icon-class='noFavorites'></svg-icon>
+                  <a href="javascript:;" @click.stop="handleFavSongItem(item, index)">
+                    <svg-icon :icon-class='favIconClass(item)'></svg-icon>
                   </a>
                   <a href="javascript:;" @click.stop="handleClearSongItem(item, index)">
                     <svg-icon icon-class='clear'></svg-icon>
@@ -37,10 +37,10 @@
           <svg-icon icon-class='add' class="icon-add"></svg-icon>
           <span>添加歌曲到队列</span>
         </div>
-        <div class="list-pop-bottom-close" @click.stop="$emit('update:playListPop', false)">
+        <div class="list-pop-bottom-close" @click.stop="handleClosePlayListPop">
           关闭
         </div>
-        <confirm :isShow.sync='isShow' @onConfirm='onConfirm'></confirm>
+        <confirm :isShow.sync='isShow' @onConfirm='onConfirm' msg='是否清空播放列表'></confirm>
       </div>
     </div>
   </transition>
@@ -51,6 +51,7 @@ import Scroll from '@components/common/scroll'
 import { mapState, mapMutations, mapGetters, mapActions } from 'vuex'
 import { playMode } from '@assets/constant'
 import Confirm from '@components/common/confirm'
+import { getLocalItem } from '@/utils/storage.js'
 export default {
   name: 'PlayList',
   props: {
@@ -61,7 +62,8 @@ export default {
   },
   data () {
     return {
-      isShow: false
+      isShow: false,
+      localFavSongList: getLocalItem('favSongList')
     }
   },
   computed: {
@@ -97,6 +99,16 @@ export default {
         modeIcon,
         modeText
       }
+    },
+    favIconClass () {
+      return function (data) {
+        const currentFavSongIndex = this.localFavSongList.findIndex(item => item.id === data.id)
+        if (currentFavSongIndex === -1) {
+          return 'noFavorites'
+        } else {
+          return 'favorite'
+        }
+      }
     }
   },
   components: {
@@ -115,11 +127,19 @@ export default {
       deletePlayList: 'delete_playList',
       updateCurrentIndex: 'update_currentIndex'
     }),
+    ...mapMutations('search', {
+      addFavSong: 'add_favSong',
+      deleteFavSong: 'delete_favSong'
+    }),
     ...mapActions('player', [
       'updatePlayMode',
       'checkoutSong',
       'getPlayerData'
     ]),
+    handleClosePlayListPop () {
+      if (this.isShow) this.isShow = false
+      this.$emit('update:playListPop', false)
+    },
     handleClickSongItem (data, index) {
       if (data.id === this.currentSong.id) {
         return false
@@ -185,6 +205,15 @@ export default {
       this.$nextTick(() => {
         this.$refs.scroll.refresh()
       })
+    },
+    handleFavSongItem (song, index) {
+      const currentFavSongIndex = this.localFavSongList.findIndex(item => item.id === song.id)
+      if (currentFavSongIndex === -1) {
+        this.addFavSong(song)
+      } else {
+        this.deleteFavSong(song)
+      }
+      this.localFavSongList = getLocalItem('favSongList')
     }
   },
   watch: {

@@ -1,6 +1,7 @@
 import { playMode } from '@assets/constant/index'
 import { getRandomNum } from '../../utils/tools'
 import { getMusicDetailApi, getMusicLyricApi, getMusicUrlApi } from '@http/song.js'
+import message from '@/utils/message'
 const state = {
   // 歌曲的播放和暂停
   playing: false,
@@ -130,6 +131,8 @@ const actions = {
     let nextIndex = playModeMap.indexOf(state.mode) + 1
     if (nextIndex >= playModeMap.length) nextIndex = 0
     state.mode = playModeMap[nextIndex]
+    const palyModeName = ['顺序播放', '循环播放', '随机播放']
+    message(palyModeName[state.mode])
     commit('update_playList', { list: state.sequenceList, mode: state.mode })
     const currentIndex = state.playList.map(item => item.id).indexOf(currentSongId)
     commit('update_currentIndex', currentIndex)
